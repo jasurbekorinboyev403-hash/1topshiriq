@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Block GPA Dashboard</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(10, 23, 40, 0.78);
+      --line: rgba(130, 177, 255, 0.18);
+      --text: #ecf4ff;
+      --muted: #9ab0ca;
+      --accent: #ffb84d;
+      --accent-2: #69f0d1;
+      --danger: #ff758f;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(119, 168, 255, 0.22), transparent 30%),
+        radial-gradient(circle at top right, rgba(255, 184, 77, 0.18), transparent 28%),
+        radial-gradient(circle at 20% 80%, rgba(105, 240, 209, 0.16), transparent 24%),
+        linear-gradient(180deg, #08111d 0%, #0b1525 45%, #07111f 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 92%);
+      opacity: 0.45;
+    }
+
+    .page {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background:
+        linear-gradient(135deg, rgba(119, 168, 255, 0.16), transparent 35%),
+        linear-gradient(145deg, rgba(255, 184, 77, 0.16), transparent 42%),
+        var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -60px;
+      top: -90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(105, 240, 209, 0.22), transparent 65%);
+      filter: blur(10px);
+    }
+
+    .hero-top,
+    .section-head,
+    .hint-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand,
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #06111a;
+      font-weight: 800;
+    }
+
+    .hero h1 {
+      margin: 18px 0 10px;
+      max-width: 720px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p,
+    .card-intro,
+    .mini-note,
+    .footer-note {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .hero-grid,
+    .layout,
+    .dashboard,
+    .summary-grid,
+    .meta-grid,
+    .button-grid,
+    .actions,
+    .stack,
+    .form-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.2fr 0.8fr;
+      margin-top: 28px;
+    }
+
+    .dashboard {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin: 18px 0 24px;
+    }
+
+    .layout {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: start;
+    }
+
+    .summary-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .button-grid,
+    .actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .actions {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .hero-panel,
+    .stat-card,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-panel,
+    .stat-card,
+    .card {
+      padding: 22px;
+    }
+
+    .hero-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .hero-list-item,
+    .summary-box,
+    .meta-box,
+    .course-row {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .hero-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255, 184, 77, 0.25), rgba(105, 240, 209, 0.22));
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stat-label,
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value,
+    .summary-box span,
+    .meta-box span {
+      margin-top: 10px;
+      display: block;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .course-row {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(110px, 0.7fr) minmax(120px, 0.8fr) auto;
+      gap: 10px;
+      align-items: end;
+      transform: translateY(16px);
+      opacity: 0;
+      animation: rise 0.45s ease forwards;
+    }
+
+    @keyframes rise {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 190, 255, 0.14);
+      color: var(--text);
+      background: rgba(4, 12, 24, 0.72);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(119, 168, 255, 0.58);
+      box-shadow: 0 0 0 4px rgba(119, 168, 255, 0.12);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn-primary {
+      color: #08101a;
+      background: linear-gradient(135deg, var(--accent), #ffd78c);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-ghost {
+      color: #09131f;
+      background: linear-gradient(135deg, var(--accent-2), #b0ffe6);
+    }
+
+    .btn-danger {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(255, 117, 143, 0.9), rgba(255, 90, 120, 0.85));
+      min-width: 112px;
+    }
+
+    .status,
+    .log {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .status[data-tone="danger"] {
+      color: #ffd8e0;
+      border-color: rgba(255, 117, 143, 0.28);
+      background: rgba(255, 117, 143, 0.09);
+    }
+
+    .status[data-tone="success"] {
+      color: #dcfff4;
+      border-color: rgba(105, 240, 209, 0.25);
+      background: rgba(105, 240, 209, 0.09);
+    }
+
+    .status[data-tone="info"] {
+      color: #e6f1ff;
+      border-color: rgba(119, 168, 255, 0.24);
+      background: rgba(119, 168, 255, 0.08);
+    }
+
+    .status:empty {
+      display: none;
+    }
+
+    .log {
+      min-height: 180px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 80%), rgba(2, 8, 18, 0.82);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      overflow: auto;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1120px) {
+      .hero-grid,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 20px, 1240px);
+        padding-top: 16px;
+      }
+
+      .course-row,
+      .actions,
+      .button-grid,
+      .summary-grid,
+      .meta-grid,
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <span class="brand-mark">SB</span>
+          <span>Smart Block GPA System</span>
+        </div>
+        <div class="badge">Sepolia-ready • Responsive • Local log</div>
+      </div>
+      <h1>GPA hisoblashni chiroyli, tez va smart-kontrakt bilan bog‘langan dashboardga aylantirdik.</h1>
+      <p>Fanlarni kiriting, GPA ni bir zumda hisoblang, lokal tarixni saqlang va xohlasangiz natijani Sepolia test tarmog‘idagi smart kontraktga yozing.</p>
+
+      <div class="hero-grid">
+        <section class="hero-panel" aria-label="Asosiy imkoniyatlar">
+          <h2>Nima yaxshilandi</h2>
+          <p class="card-intro">Yangi layout hisoblash jarayonini aniqroq ko‘rsatadi va foydalanuvchiga tushunarli oqim beradi.</p>
+          <div class="hero-list">
+            <div class="hero-list-item">
+              <div class="pill">01</div>
+              <div><strong>Interaktiv GPA panel</strong><br /><span>Fanlar, kreditlar va baholar bo‘yicha natija darhol ko‘rinadi.</span></div>
+            </div>
+            <div class="hero-list-item">
+              <div class="pill">02</div>
+              <div><strong>Smart log va tarix</strong><br /><span>Oxirgi hisoblashlar lokal tarix ko‘rinishida saqlanadi.</span></div>
+            </div>
+            <div class="hero-list-item">
+              <div class="pill">03</div>
+              <div><strong>Wallet + smart kontrakt</strong><br /><span>MetaMask orqali Sepolia bilan ishlash uchun tayyor oqim.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="hero-panel" aria-label="Tezkor holat">
+          <h2>Tezkor holat</h2>
+          <p class="card-intro">Pastdagi kartalarda hisoblash holati, fanlar soni va tizimning tayyorlik darajasi ko‘rinadi.</p>
+          <div class="summary-grid">
+            <div class="summary-box"><strong>Joriy GPA</strong><span id="heroGpa">0.00</span></div>
+            <div class="summary-box"><strong>Jami kredit</strong><span id="heroCredits">0</span></div>
+            <div class="summary-box"><strong>Fanlar soni</strong><span id="heroCourses">0</span></div>
+            <div class="summary-box"><strong>Tizim holati</strong><span id="heroState">Tayyor</span></div>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <section class="dashboard" aria-label="Dashboard statistikasi">
+      <article class="stat-card">
+        <div class="stat-label">Jami Kredit</div>
+        <div class="stat-value" id="totalCredits">0</div>
+        <div class="card-intro">Hisoblangan barcha fanlarning kredit yig‘indisi</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">GPA</div>
+        <div class="stat-value" id="gpa">0.00</div>
+        <div class="card-intro">4.00 shkaladagi yakuniy ko‘rsatkich</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">Eng Kuchli Baho</div>
+        <div class="stat-value" id="bestGrade">-</div>
+        <div class="card-intro">Kiritilgan fanlar orasidagi eng yuqori natija</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-label">Oxirgi Amal</div>
+        <div class="stat-value" id="lastAction">Kutilmoqda</div>
+        <div class="card-intro">Hisoblash yoki Web3 amallaridan oxirgisi</div>
+      </article>
+    </section>
+
+    <main class="layout">
+      <div class="stack">
+        <section class="card" aria-label="Fanlar paneli">
+          <div class="section-head">
+            <div>
+              <h2>Fanlar Paneli</h2>
+              <p class="card-intro">Har bir fan uchun nom, kredit va bahoni kiriting. Tizim GPA ni shu ma'lumotlar asosida hisoblaydi.</p>
+            </div>
+            <div class="badge">Dinamik kurslar ro‘yxati</div>
+          </div>
+
+          <div id="courses" class="form-grid"></div>
+
+          <div class="actions">
+            <button id="addCourse" class="btn-secondary" type="button">+ Fan qo‘shish</button>
+            <button id="resetCourses" class="btn-secondary" type="button">Tozalash</button>
+            <button id="calc" class="btn-primary" type="button">GPA ni hisoblash</button>
+          </div>
+
+          <div class="hint-row">
+            <span>Maslahat: kredit qiymatini 1 dan 30 gacha kiriting.</span>
+            <span id="courseCountText">Hozircha 0 ta fan bor.</span>
+          </div>
+
+          <p class="status" id="error" data-tone="info" role="alert" aria-live="polite"></p>
+        </section>
+
+        <section class="card" aria-label="Hisoblash natijalari">
+          <div class="section-head">
+            <div>
+              <h2>Natijalar va Log</h2>
+              <p class="card-intro">Hisoblangandan keyin lokal tarix yangilanadi. Shu yerda oxirgi natijalar va snapshotlar ko‘rinadi.</p>
+            </div>
+            <div class="badge">Smart-Log</div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-box"><strong>Oxirgi hisoblangan vaqt</strong><span id="lastComputedAt">-</span></div>
+            <div class="meta-box"><strong>O‘rtacha kredit</strong><span id="avgCredits">0.00</span></div>
+            <div class="meta-box"><strong>Kuchli fan</strong><span id="topCourse">-</span></div>
+          </div>
+
+          <div class="log" id="log">[Log bo‘sh]</div>
+          <p class="mini-note">Log oxirgi 6 ta hisoblashni ko‘rsatadi. Har bir snapshot vaqt, GPA va fanlar kesimidagi ma'lumotlarni saqlaydi.</p>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card" aria-label="Web3 ulanish paneli">
+          <div class="section-head">
+            <div>
+              <h2>Web3 Ulanish</h2>
+              <p class="card-intro">MetaMask bilan ulanib, Sepolia testnetdagi kontraktga GPA yozuvi yuborish yoki undan o‘qish mumkin.</p>
+            </div>
+            <div class="badge">Ethers v6</div>
+          </div>
+
+          <div class="button-grid">
+            <button id="connectWallet" class="btn-ghost" type="button">Wallet ulash</button>
+            <button id="readOnChain" class="btn-secondary" type="button">Kontraktdan o‘qish</button>
+          </div>
+
+          <div class="field" style="margin-top: 14px;">
+            <label for="contractAddress">Kontrakt manzili</label>
+            <input id="contractAddress" placeholder="0x..." autocomplete="off" />
+          </div>
+
+          <div class="field" style="margin-top: 14px;">
+            <label for="contractAbi">ABI</label>
+            <textarea id="contractAbi" readonly></textarea>
+          </div>
+
+          <div class="button-grid" style="margin-top: 14px;">
+            <button id="writeOnChain" class="btn-primary" type="button">GPA ni yozish</button>
+            <button id="copyAddress" class="btn-secondary" type="button">Manzilni nusxalash</button>
+          </div>
+
+          <p id="web3Status" class="status" data-tone="info">Ulanmagan.</p>
+          <div class="log" id="web3Log">[On-chain log bo‘sh]</div>
+          <p class="mini-note">Agar Sepolia tanlanmagan bo‘lsa, tizim sizdan tarmoqni almashtirishni so‘raydi. Kontrakt manzili lokal saqlanadi.</p>
+        </section>
+      </div>
+    </main>
+
+    <p class="footer-note">Smart Block GPA Dashboard • Lokal frontend • Web3 bilan kengaytirilgan akademik monitoring paneli</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script>
+    const coursesEl = document.getElementById("courses");
+    const addBtn = document.getElementById("addCourse");
+    const resetBtn = document.getElementById("resetCourses");
+    const calcBtn = document.getElementById("calc");
+    const errorEl = document.getElementById("error");
+    const totalCreditsEl = document.getElementById("totalCredits");
+    const gpaEl = document.getElementById("gpa");
+    const logEl = document.getElementById("log");
+    const bestGradeEl = document.getElementById("bestGrade");
+    const lastActionEl = document.getElementById("lastAction");
+    const heroGpaEl = document.getElementById("heroGpa");
+    const heroCreditsEl = document.getElementById("heroCredits");
+    const heroCoursesEl = document.getElementById("heroCourses");
+    const heroStateEl = document.getElementById("heroState");
+    const courseCountTextEl = document.getElementById("courseCountText");
+    const lastComputedAtEl = document.getElementById("lastComputedAt");
+    const avgCreditsEl = document.getElementById("avgCredits");
+    const topCourseEl = document.getElementById("topCourse");
+    const connectBtn = document.getElementById("connectWallet");
+    const readBtn = document.getElementById("readOnChain");
+    const writeBtn = document.getElementById("writeOnChain");
+    const addrInput = document.getElementById("contractAddress");
+    const abiTextarea = document.getElementById("contractAbi");
+    const web3Status = document.getElementById("web3Status");
+    const web3Log = document.getElementById("web3Log");
+    const copyBtn = document.getElementById("copyAddress");
+
+    const gradePoints = {
+      "A+": 4.0,
+      "A": 4.0,
+      "A-": 3.7,
+      "B+": 3.3,
+      "B": 3.0,
+      "B-": 2.7,
+      "C+": 2.3,
+      "C": 2.0,
+      "C-": 1.7,
+      "D": 1.0,
+      "F": 0.0
+    };
+
+    const contractAbi = [
+      {
+        inputs: [
+          { internalType: "uint256", name: "totalCredits", type: "uint256" },
+          { internalType: "uint256", name: "gpaTimes100", type: "uint256" },
+          { internalType: "string", name: "memo", type: "string" }
+        ],
+        name: "recordGPA",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function"
+      },
+      {
+        inputs: [{ internalType: "address", name: "", type: "address" }],
+        name: "lastRecord",
+        outputs: [
+          { internalType: "uint256", name: "totalCredits", type: "uint256" },
+          { internalType: "uint256", name: "gpaTimes100", type: "uint256" },
+          { internalType: "uint256", name: "timestamp", type: "uint256" },
+          { internalType: "string", name: "memo", type: "string" }
+        ],
+        stateMutability: "view",
+        type: "function"
+      }
+    ];
+
+    const log = [];
+    let provider = null;
+    let signer = null;
+    let contract = null;
+    let currentAccount = null;
+    let lastComputed = null;
+    const SEPOLIA_CHAIN_ID = "0xaa36a7";
+
+    abiTextarea.value = JSON.stringify(contractAbi, null, 2);
+
+    function setLastAction(text) {
+      lastActionEl.textContent = text;
+    }
+
+    function setMessage(element, message, tone) {
+      element.textContent = message;
+      element.dataset.tone = tone;
+    }
+
+    function updateHeroState(text) {
+      heroStateEl.textContent = text;
+    }
+
+    function updateCourseCounter() {
+      const count = coursesEl.querySelectorAll(".course-row").length;
+      heroCoursesEl.textContent = String(count);
+      courseCountTextEl.textContent = count === 0 ? "Hozircha fan kiritilmagan." : `Hozir ${count} ta fan kiritilgan.`;
+    }
+
+    function createField(labelText, element) {
+      const field = document.createElement("div");
+      field.className = "field";
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      field.appendChild(label);
+      field.appendChild(element);
+      return field;
+    }
+
+    function createRow(name = "", credits = 3, grade = "A") {
+      const row = document.createElement("div");
+      row.className = "course-row";
+
+      const nameInput = document.createElement("input");
+      nameInput.placeholder = "Masalan: Matematika";
+      nameInput.value = name;
+
+      const creditInput = document.createElement("input");
+      creditInput.type = "number";
+      creditInput.min = "1";
+      creditInput.max = "30";
+      creditInput.step = "1";
+      creditInput.value = credits;
+
+      const gradeSelect = document.createElement("select");
+      Object.keys(gradePoints).forEach((gradeKey) => {
+        const option = document.createElement("option");
+        option.value = gradeKey;
+        option.textContent = gradeKey;
+        if (gradeKey === grade) option.selected = true;
+        gradeSelect.appendChild(option);
+      });
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.textContent = "O‘chirish";
+      delBtn.className = "btn-danger";
+      delBtn.addEventListener("click", () => {
+        row.remove();
+        updateCourseCounter();
+        setMessage(errorEl, "Fan o‘chirildi.", "info");
+        setLastAction("Fan o‘chirildi");
+      });
+
+      row.appendChild(createField("Fan nomi", nameInput));
+      row.appendChild(createField("Kredit", creditInput));
+      row.appendChild(createField("Baho", gradeSelect));
+      row.appendChild(delBtn);
+      return row;
+    }
+
+    function addCourse(name = "", credits = 3, grade = "A") {
+      coursesEl.appendChild(createRow(name, credits, grade));
+      updateCourseCounter();
+      setLastAction("Yangi fan qo‘shildi");
+    }
+
+    function resetSummary() {
+      totalCreditsEl.textContent = "0";
+      gpaEl.textContent = "0.00";
+      heroGpaEl.textContent = "0.00";
+      heroCreditsEl.textContent = "0";
+      bestGradeEl.textContent = "-";
+      avgCreditsEl.textContent = "0.00";
+      topCourseEl.textContent = "-";
+      lastComputedAtEl.textContent = "-";
+      if (!lastComputed) updateHeroState("Tayyor");
+    }
+
+    function renderLog() {
+      if (log.length === 0) {
+        logEl.textContent = "[Log bo‘sh]";
+        return;
+      }
+
+      const lines = log.slice(0, 6).map((entry, index) => {
+        const header = `#${log.length - index} | ${entry.time} | GPA: ${entry.gpa} | Kredit: ${entry.totalCredits}`;
+        const meta = `Eng kuchli fan: ${entry.topCourse || "-"} | O‘rtacha kredit: ${entry.averageCredits}`;
+        const courses = entry.courses.map((course) => ` - ${course.name}: ${course.credits} kredit, baho ${course.grade}, ball ${course.points.toFixed(1)}`).join("\n");
+        return `${header}\n${meta}\n${courses}`;
+      });
+
+      logEl.textContent = lines.join("\n\n");
+    }
+
+    function getRowsData() {
+      return Array.from(coursesEl.querySelectorAll(".course-row")).map((row) => {
+        const inputs = row.querySelectorAll("input, select");
+        return {
+          name: inputs[0].value.trim(),
+          credits: Number(inputs[1].value),
+          grade: inputs[2].value
+        };
+      });
+    }
+
+    function computeGPA() {
+      const rows = getRowsData();
+      setMessage(errorEl, "", "info");
+
+      if (rows.length === 0) {
+        setMessage(errorEl, "Kamida bitta fan kiriting.", "danger");
+        updateHeroState("Ma'lumot kerak");
+        return;
+      }
+
+      let totalCredits = 0;
+      let totalPoints = 0;
+      let bestGrade = null;
+      let topCourse = null;
+      const snapshot = [];
+
+      for (const row of rows) {
+        const courseName = row.name || "Noma'lum fan";
+        if (!Number.isFinite(row.credits) || row.credits < 1 || row.credits > 30) {
+          setMessage(errorEl, "Har bir fan krediti 1 dan 30 gacha bo‘lishi kerak.", "danger");
+          updateHeroState("Xatolik");
+          return;
+        }
+
+        const points = gradePoints[row.grade];
+        totalCredits += row.credits;
+        totalPoints += row.credits * points;
+        if (bestGrade === null || points > gradePoints[bestGrade]) bestGrade = row.grade;
+        if (!topCourse || points > topCourse.points) topCourse = { name: courseName, points };
+        snapshot.push({ name: courseName, credits: row.credits, grade: row.grade, points });
+      }
+
+      const gpa = totalPoints / totalCredits;
+      const averageCredits = totalCredits / rows.length;
+      const timeLabel = new Date().toLocaleString("uz-UZ");
+
+      totalCreditsEl.textContent = String(totalCredits);
+      gpaEl.textContent = gpa.toFixed(2);
+      heroGpaEl.textContent = gpa.toFixed(2);
+      heroCreditsEl.textContent = String(totalCredits);
+      bestGradeEl.textContent = bestGrade || "-";
+      avgCreditsEl.textContent = averageCredits.toFixed(2);
+      topCourseEl.textContent = topCourse ? topCourse.name : "-";
+      lastComputedAtEl.textContent = timeLabel;
+      updateHeroState("Hisoblandi");
+
+      log.unshift({
+        time: timeLabel,
+        totalCredits,
+        gpa: gpa.toFixed(2),
+        averageCredits: averageCredits.toFixed(2),
+        topCourse: topCourse ? topCourse.name : "-",
+        courses: snapshot
+      });
+      renderLog();
+
+      lastComputed = { totalCredits, gpa: Number(gpa.toFixed(2)), computedAt: timeLabel };
+      setMessage(errorEl, "GPA muvaffaqiyatli hisoblandi.", "success");
+      setLastAction("GPA hisoblandi");
+    }
+
+    function setWeb3Status(message, tone = "info") {
+      setMessage(web3Status, message, tone);
+    }
+
+    function setWeb3Log(message) {
+      web3Log.textContent = message;
+    }
+
+    function isValidAddress(addr) {
+      return /^0x[a-fA-F0-9]{40}$/.test(addr);
+    }
+
+    function getContractAddress() {
+      return addrInput.value.trim();
+    }
+
+    function buildContract() {
+      const address = getContractAddress();
+      if (!isValidAddress(address)) {
+        setWeb3Status("Kontrakt manzili noto‘g‘ri.", "danger");
+        return null;
+      }
+      if (!signer) {
+        setWeb3Status("Avval wallet ulang.", "danger");
+        return null;
+      }
+      return new ethers.Contract(address, contractAbi, signer);
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        setWeb3Status("MetaMask topilmadi. Brauzerga MetaMask o‘rnating.", "danger");
+        setLastAction("MetaMask topilmadi");
+        return;
+      }
+
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        currentAccount = accounts[0];
+        const network = await provider.getNetwork();
+        if (network.chainId !== 11155111n) {
+          await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: SEPOLIA_CHAIN_ID }] });
+        }
+        signer = await provider.getSigner();
+        contract = buildContract();
+        setWeb3Status(`Ulandi: ${currentAccount}`, "success");
+        setLastAction("Wallet ulandi");
+      } catch (error) {
+        setWeb3Status("Wallet ulanishida xatolik yuz berdi.", "danger");
+        setLastAction("Wallet ulanish xatoligi");
+      }
+    }
+
+    async function readOnChain() {
+      if (!signer || !currentAccount) {
+        setWeb3Status("Avval wallet ulangan bo‘lishi kerak.", "danger");
+        return;
+      }
+      contract = buildContract();
+      if (!contract) return;
+
+      try {
+        const record = await contract.lastRecord(currentAccount);
+        const credits = Number(record.totalCredits);
+        const hasData = credits > 0 || Number(record.timestamp) > 0;
+        if (!hasData) {
+          setWeb3Log("Bu wallet uchun hali yozuv topilmadi.");
+          setWeb3Status("On-chain yozuv topilmadi.", "info");
+          setLastAction("On-chain yozuv topilmadi");
+          return;
+        }
+
+        const time = new Date(Number(record.timestamp) * 1000).toLocaleString("uz-UZ");
+        const gpa = (Number(record.gpaTimes100) / 100).toFixed(2);
+        setWeb3Log(`Oxirgi yozuv:\nTalaba: ${currentAccount}\nVaqt: ${time}\nKredit: ${credits}\nGPA: ${gpa}\nIzoh: ${record.memo || "-"}`);
+        setWeb3Status("Kontraktdan ma'lumot muvaffaqiyatli o‘qildi.", "success");
+        setLastAction("On-chain ma'lumot o‘qildi");
+      } catch (error) {
+        setWeb3Log("Kontraktdan o‘qishda xatolik yuz berdi.");
+        setWeb3Status("Kontraktdan o‘qishda xatolik.", "danger");
+        setLastAction("On-chain o‘qish xatoligi");
+      }
+    }
+
+    async function writeOnChain() {
+      if (!signer) {
+        setWeb3Status("Avval wallet ulangan bo‘lsin.", "danger");
+        return;
+      }
+      if (!lastComputed) {
+        setWeb3Status("Avval GPA ni hisoblang.", "danger");
+        return;
+      }
+
+      contract = buildContract();
+      if (!contract) return;
+
+      try {
+        const gpaTimes100 = Math.round(lastComputed.gpa * 100);
+        setWeb3Status("Tranzaksiya yuborilmoqda...", "info");
+        setWeb3Log("Tranzaksiya tayyorlanmoqda...");
+        const tx = await contract.recordGPA(lastComputed.totalCredits, gpaTimes100, `GPA ${lastComputed.gpa.toFixed(2)} • ${lastComputed.computedAt}`);
+        setWeb3Log(`Tx yuborildi:\n${tx.hash}\n\nTasdiqlanishi kutilmoqda...`);
+        await tx.wait();
+        setWeb3Status("Tranzaksiya tasdiqlandi.", "success");
+        setLastAction("GPA on-chain yozildi");
+        await readOnChain();
+      } catch (error) {
+        setWeb3Status("Tranzaksiyada xatolik yuz berdi.", "danger");
+        setWeb3Log("GPA ni kontraktga yozishda xatolik yuz berdi.");
+        setLastAction("On-chain yozish xatoligi");
+      }
+    }
+
+    async function copyAddress() {
+      const address = getContractAddress();
+      if (!address) {
+        setWeb3Status("Nusxalash uchun kontrakt manzilini kiriting.", "danger");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(address);
+        setWeb3Status("Kontrakt manzili nusxalandi.", "success");
+        setLastAction("Manzil nusxalandi");
+      } catch (error) {
+        setWeb3Status("Clipboard ga nusxalab bo‘lmadi.", "danger");
+      }
+    }
+
+    function resetCourses() {
+      coursesEl.innerHTML = "";
+      lastComputed = null;
+      resetSummary();
+      updateCourseCounter();
+      setMessage(errorEl, "Barcha fanlar tozalandi. Yangi fanlar qo‘shishingiz mumkin.", "info");
+      setLastAction("Fanlar tozalandi");
+      updateHeroState("Tozalandi");
+    }
+
+    addBtn.addEventListener("click", () => addCourse());
+    resetBtn.addEventListener("click", resetCourses);
+    calcBtn.addEventListener("click", computeGPA);
+    connectBtn.addEventListener("click", connectWallet);
+    readBtn.addEventListener("click", readOnChain);
+    writeBtn.addEventListener("click", writeOnChain);
+    copyBtn.addEventListener("click", copyAddress);
+
+    addrInput.addEventListener("input", () => {
+      localStorage.setItem("gpa_contract_address", addrInput.value.trim());
+      if (signer) contract = buildContract();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") computeGPA();
+    });
+
+    const savedAddress = localStorage.getItem("gpa_contract_address");
+    if (savedAddress) addrInput.value = savedAddress;
+
+    addCourse("Matematika", 4, "A-");
+    addCourse("Dasturlash", 3, "A");
+    addCourse("Fizika", 2, "B+");
+    renderLog();
+    resetSummary();
+    setMessage(errorEl, "Fanlar tayyor. Hisoblashni boshlashingiz mumkin.", "info");
+    setWeb3Log("[On-chain log bo‘sh]");
+    setLastAction("Tizim yuklandi");
+  </script>
+</body>
+</html>
